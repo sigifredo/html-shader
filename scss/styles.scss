@@ -1,0 +1,14 @@
+@import url('https://fonts.googleapis.com/css2?family=Lato&display=swap');
+
+html, body {
+    margin: 0;
+    padding: 0;
+}
+
+.shdrContainer {
+    canvas {
+        display: block;
+        min-height: 500px;
+        width: 100%;
+    }
+}
