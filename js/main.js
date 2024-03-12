@@ -1,10 +1,14 @@
 
 
+// Vertex shader
 const vShadeCode = `
-    attribute vec2 a_position;
-    void main() {
-        gl_Position = vec4(a_position, 0.0, 1.0);
-    }
+precision mediump float;
+
+attribute vec3 a_position;
+
+void main() {
+    gl_Position = vec4(a_position, 1.0);
+}
 `;
 
 const fShadeCode = `
@@ -27,11 +31,10 @@ const fShadeCode = `
 main();
 
 function main() {
-    // Obtener el canvas
     const canvas = document.querySelector("#shdrContainer canvas");
-
-    // Configurar WebGL
-    const gl = canvas.getContext("webgl");
+    canvas.width = canvas.clientWidth;
+    canvas.height = canvas.clientHeight;
+    const gl = canvas.getContext('webgl');
 
     if (gl) {
         gl.clearColor(0.0, 0.0, 0.0, 1.0);
@@ -41,10 +44,12 @@ function main() {
 
         if (shaderProgram) {
             const vertices = [
-                -1.0, 1.0,
-                -1.0, -1.0,
-                1.0, 1.0,
-                1.0, -1.0,
+                -1,  1,
+                -1, -1,
+                 1, -1,
+                -1,  1,
+                 1, -1,
+                 1, 1,
             ];
 
             const vertexBuffer = gl.createBuffer();
@@ -64,17 +69,18 @@ function main() {
                 const resolutionUniformLocation = gl.getUniformLocation(shaderProgram, "u_resolution");
                 gl.uniform1f(timeUniformLocation, currentTime);
                 gl.uniform2f(resolutionUniformLocation, canvas.clientWidth, canvas.clientHeight);
+                canvas.width = canvas.clientWidth
+                canvas.height = canvas.clientHeight;
+
+                console.log([canvas.clientWidth, canvas.clientHeight]);
 
                 // Limpiar el canvas y renderizar
-                gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+                gl.drawArrays(gl.TRIANGLES, 0, 6);
 
                 requestAnimationFrame(render);
             };
             render();
         }
-    }
-    else {
-        console.error("WebGL no está disponible");
     }
 }
 
@@ -98,19 +104,23 @@ function createShaderProgram(gl) {
     const vertexShader = createShader(gl, gl.VERTEX_SHADER, vShadeCode);
     const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fShadeCode);
 
-    // Crear programa de shader
-    const shaderProgram = gl.createProgram();
-    gl.attachShader(shaderProgram, vertexShader);
-    gl.attachShader(shaderProgram, fragmentShader);
-    gl.linkProgram(shaderProgram);
+    if (vertexShader && fragmentShader) {
+        // Crear programa de shader
+        const shaderProgram = gl.createProgram();
+        gl.attachShader(shaderProgram, vertexShader);
+        gl.attachShader(shaderProgram, fragmentShader);
+        gl.linkProgram(shaderProgram);
 
-    if (gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
-        gl.useProgram(shaderProgram);
+        if (gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
+            gl.useProgram(shaderProgram);
 
-        return shaderProgram;
-    }
-    else {
-        console.error(`Unable to initialize the shader program: ${gl.getProgramInfoLog(shaderProgram)}`);
+            return shaderProgram;
+        }
+        else {
+            console.error(`Unable to initialize the shader program: ${gl.getProgramInfoLog(shaderProgram)}`);
+            return null;
+        }
+    } else {
         return null;
     }
 }
